@@ -137,6 +137,10 @@ impl Game {
 		let between = Range::new(0, 9);
 		self.make_move(Mark::O, between.ind_sample(&mut rng))
 	}
+
+	fn store_win(self) -> String {
+		format!("{}", self)
+	}
 }
 
 fn main() {
@@ -149,4 +153,5 @@ fn main() {
 		Mark::E => println!("Tie!"),
 		_ => println!("Player {} won!", game.winner),
 	}
+	game.store_win();
 }
