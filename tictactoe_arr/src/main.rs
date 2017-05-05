@@ -4,14 +4,13 @@ use std::io;
 use std::fmt;
 use std::option::*;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq)]
 enum Mark {
 	O,
 	X,
 	E,
 }
 
-#[derive(Debug)]
 struct Game {
 	board: [Mark; 9],
 	turn: Mark,
@@ -147,7 +146,6 @@ impl Game {
 }
 
 fn main() {
-
 	let mut game = Game::new();
 	while !game.is_done() {
 		while !game.player_move() {}
