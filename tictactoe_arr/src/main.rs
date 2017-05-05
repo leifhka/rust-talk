@@ -47,10 +47,7 @@ impl fmt::Display for Game {
 
 impl Mark {
 	fn is_empty(&self) -> bool {
-		match *self {
-			Mark::E => true,
-			_ => false,
-		}
+    	*self == Mark::E
 	}
 }
 
@@ -100,12 +97,12 @@ impl Game {
 		}
 	}
 
-	fn is_done(&mut self) -> bool {
-		self.is_won() || self.is_tie()
-	}
-
 	fn is_tie(&self) -> bool {
 		!self.board.iter().any(|x| (*x == Mark::E))
+	}
+
+	fn is_done(&mut self) -> bool {
+		self.is_won() || self.is_tie()
 	}
 
 	fn make_move(&mut self, m: Mark, i: usize) -> bool {
@@ -126,6 +123,8 @@ impl Game {
 	}
 
 	fn make_player_move(&mut self) -> bool {
+    	println!("{}", &self);
+    	println!("Make a move:");
 		let mut input_text = String::new();
 		io::stdin()
 			.read_line(&mut input_text)
@@ -147,18 +146,13 @@ impl Game {
 	}
 }
 
-fn print_loop_text(b: &Game) {
-	println!("{}\nMake a move: ", &b);
-}
-
 fn main() {
 
 	let mut game = Game::new();
 	while !game.is_done() {
-		print_loop_text(&game);
 		while !game.player_move() {}
 	}
-	println!("{}", &game);
+	println!("============\n{}", &game);
 	match game.winner {
 		Mark::E => println!("Tie!"),
 		_ => println!("Player {} won!", game.winner),
