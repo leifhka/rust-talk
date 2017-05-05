@@ -44,12 +44,6 @@ impl fmt::Display for Game {
 	}
 }
 
-impl Mark {
-	fn is_empty(&self) -> bool {
-		*self == Mark::E
-	}
-}
-
 impl Game {
 	fn new() -> Self {
 		use Mark::*;
@@ -60,7 +54,7 @@ impl Game {
 		let mut flipped = [Mark::E; 9];
 		for i in 0..3 {
 			for j in 0..3 {
-				flipped[3*i + j] = self.board[3*j+i];
+				flipped[3*i + (2-j)] = self.board[3*j+i];
 			}
 		}
 		return Game {board: flipped, winner: self.winner, turn: self.turn};
@@ -69,11 +63,11 @@ impl Game {
 	fn is_won_horizontal(&self) -> Option<Mark> {
 		let b = &self.board;
 
-		if !b[0].is_empty() && ((b[0] == b[1] && b[1] == b[2]) || (b[0] == b[4] && b[4] == b[8])) {
+		if b[0] != Mark::E && ((b[0] == b[1] && b[1] == b[2]) || (b[0] == b[4] && b[4] == b[8])) {
 			Some(b[0])
-		} else if !b[3].is_empty() && b[3] == b[4] && b[4] == b[5] {
+		} else if b[3] != Mark::E && b[3] == b[4] && b[4] == b[5] {
 			Some(b[3])
-		} else if !b[6].is_empty() && b[6] == b[7] && b[7] == b[8] {
+		} else if b[6] != Mark::E && b[6] == b[7] && b[7] == b[8] {
 			Some(b[6])
 		} else {
 			None
