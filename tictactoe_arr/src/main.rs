@@ -46,7 +46,7 @@ impl fmt::Display for Game {
 
 impl Mark {
 	fn is_empty(&self) -> bool {
-    	*self == Mark::E
+		*self == Mark::E
 	}
 }
 
@@ -122,8 +122,8 @@ impl Game {
 	}
 
 	fn make_player_move(&mut self) -> bool {
-    	println!("{}", &self);
-    	println!("Make a move:");
+		println!("{}", &self);
+		println!("Make a move:");
 		let mut input_text = String::new();
 		io::stdin()
 			.read_line(&mut input_text)
