@@ -4,6 +4,19 @@ use std::io;
 use std::fmt;
 use std::option::*;
 
+#[allow(dead_code)]
+#[derive(Debug, Clone)]
+enum RefList<'a> {
+	Nil,
+	Cons(String, &'a RefList<'a>),
+}
+
+#[derive(Debug, Clone)]
+enum BoxList {
+	Nil,
+	Cons(String, Box<BoxList>),
+}
+
 #[derive(Clone, Copy, PartialEq)]
 enum Mark {
 	O,
@@ -15,6 +28,16 @@ struct Game {
 	board: [Mark; 9],
 	turn: Mark,
 	winner: Mark,
+}
+
+impl fmt::Display for BoxList {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		let printable = match *self {
+			BoxList::Cons(ref game, ref l) => String::from(format!("{}\n{}", game, l)),
+			_ => String::from(""),
+		};
+		write!(f, "{}", printable)
+	}
 }
 
 impl fmt::Display for Mark {
@@ -144,14 +167,22 @@ impl Game {
 }
 
 fn main() {
-	let mut game = Game::new();
-	while !game.is_done() {
-		while !game.player_move() {}
+	//use RefList::*;
+	//let mut refLst = Nil;
+	use BoxList::*;
+	let mut box_lst = Nil;
+	for _ in 0..3 {
+    	let mut game = Game::new();
+    	while !game.is_done() {
+			while !game.player_move() {}
+		}
+		println!("============\n{}", &game);
+		match game.winner {
+			Mark::E => println!("Tie!"),
+    		_ => println!("Player {} won!", game.winner),
+    	}
+    	//refLst = Cons(game.store_win(), &lst.clone()); // Results in err as lst.clone() does not live long enough
+    	box_lst = Cons(game.store_win(), Box::new(box_lst.clone()));
 	}
-	println!("============\n{}", &game);
-	match game.winner {
-		Mark::E => println!("Tie!"),
-		_ => println!("Player {} won!", game.winner),
-	}
-	game.store_win();
+	println!("============\nAll games:\n{}", box_lst);
 }
