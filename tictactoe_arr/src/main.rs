@@ -6,15 +6,30 @@ use std::option::*;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
-enum RefList<'a> {
+enum RefList<'a, E: 'a> {
 	Nil,
-	Cons(String, &'a RefList<'a>),
+	Cons(E, &'a RefList<'a, E>),
+}
+
+impl<'a> RefList<'a, String> {
+    fn len(&'a self) -> i32 {
+        match *self {
+            RefList::Cons(_, l) => 1+l.len(),
+            _ => 0,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
 enum BoxList {
 	Nil,
 	Cons(String, Box<BoxList>),
+}
+
+struct Score {
+    games: BoxList,
+    xwin: u32,
+    owin: u32,
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -29,6 +44,24 @@ struct Game {
 	turn: Mark,
 	winner: Mark,
 }
+
+impl fmt::Display for Score {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    	write!(f, "Games:\n{}\nX has won {} times\n O has won {} times.", self.games, self.xwin, self.owin)
+	}
+}
+
+impl Score {
+    fn add_game(&mut self, game: Game) {
+		match game.winner {
+    		Mark::O => self.owin += 1,
+    		Mark::X => self.xwin += 1,
+    		_ => ()
+		};
+		self.games = BoxList::Cons(format!("{}", game), Box::new(self.games.clone()));
+    }
+}
+
 
 impl fmt::Display for BoxList {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -161,16 +194,16 @@ impl Game {
 		self.make_move(Mark::O, between.ind_sample(&mut rng))
 	}
 
-	fn store_win(self) -> String {
-		format!("{}", self)
-	}
+	//fn store_win(self) -> String {
+	//	format!("{}", self)
+	//}
 }
 
 fn main() {
 	//use RefList::*;
 	//let mut refLst = Nil;
 	use BoxList::*;
-	let mut box_lst = Nil;
+	let mut score = Score { games: Nil, xwin: 0, owin: 0 };
 	for _ in 0..3 {
     	let mut game = Game::new();
     	while !game.is_done() {
@@ -182,7 +215,8 @@ fn main() {
     		_ => println!("Player {} won!", game.winner),
     	}
     	//refLst = Cons(game.store_win(), &lst.clone()); // Results in err as lst.clone() does not live long enough
-    	box_lst = Cons(game.store_win(), Box::new(box_lst.clone()));
+    	score.add_game(game);
 	}
-	println!("============\nAll games:\n{}", box_lst);
+	println!("============\n{}", score);
+	println!("len: {}", (RefList::Cons(String::from("Hello"), &RefList::Cons(String::from("World"), &RefList::Nil))).len());
 }
