@@ -2,31 +2,28 @@
 %author: Leif Harald Karlsen
 %date: 2016-05-09
 
-# Content
+-> # Content <-
 
 * Placing Rust among other languages
   * Why does Rust exist?
   * Language overview
 ^
 * Simple features
-  * Hello World
   * Declarations
-  * Type inference
-  * Functions
   * Structs and types
-  * Methods
+  * Functions and methods
   * Traits
+  * Borrowing
 ^
 * Advanced features
-  * Ownership and borrowing
-  * Life times
+  * More on ownership and borrowing
+  * Lifetimes
   * Box
   * Unsafe
- 
 
 ---
 
-# Why does Rust exist?
+-> # Why does Rust exist? <-
 
 
 _One normally has to pick one of:_
@@ -48,15 +45,18 @@ _One normally has to pick one of:_
   * Low resource consumption, 
 ^
   * and automatic memory management and memory safety.
+^
+
+*Rust is a safe systems programming language*
 
 ---
 
-# Language overview
+-> # Language overview <-
 
 Rust:
 * is compiled systems programming language,
 ^
-* is strictly and satically typed,
+* is strictly and statically typed,
 ^
 * has a struct and trait based type system,
 ^
@@ -68,4 +68,36 @@ Rust:
 
 ---
 
+-> # Data races <-
 
+> A data race is a condition defined by
+> having at least one entity writing to
+> a location which others are reading.
+
+---
+
+-> # Borrowing <-
+
+_At any point in time we can have:_
+
+^
+* Any number of immutable borrows ( *\&x* )
+^
+* but no mutable borrows ( *\&mut x* )
+^
+
+or
+
+* Exactly one mutable borrow ( *\&mut x* )
+^
+* but no immutable borrows ( *\&x* )
+
+---
+
+-> # Lifetimes <-
+
+* No reference can outlive what it refers to.
+^
+* The compiler ensures this, so there are no dangling pointers at runtime.
+^
+* Sometimes, we have to help the compiler by explicitly stating relative lifetimes.
