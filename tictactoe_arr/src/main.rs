@@ -4,14 +4,15 @@ use std::io;
 use std::fmt;
 use std::option::*;
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 enum Mark {
 	O,
 	X,
 	E,
 }
 
-struct Game {
+#[derive(Debug)]
+struct TickTackToe {
 	board: [Mark; 9],
 	turn: Mark,
 	winner: Mark,
@@ -29,7 +30,7 @@ impl fmt::Display for Mark {
 	}
 }
 
-impl fmt::Display for Game {
+impl fmt::Display for TickTackToe {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let mut s = String::from("");
 		let mut b = String::from("");
@@ -44,10 +45,10 @@ impl fmt::Display for Game {
 	}
 }
 
-impl Game {
+impl TickTackToe {
 	fn new() -> Self {
 		use Mark::*;
-		Game { board: [E; 9], turn: X, winner: E }
+		TickTackToe { board: [E; 9], turn: X, winner: E }
 	}
 
 	fn player_move(&mut self) -> bool {
@@ -67,13 +68,20 @@ impl Game {
 		}
 	}
 
+	fn flip_turn(&mut self) {
+		match self.turn {
+			Mark::X => self.turn = Mark::O,
+			_ => self.turn = Mark::X,
+		}
+	}
+
 	fn make_player_move(&mut self) -> bool {
 		println!("{}", &self);
 		println!("Make a move:");
 		let mut input_text = String::new();
 		io::stdin()
-			.read_line(&mut input_text)
-			.expect("failed to read from stdin");
+		    .read_line(&mut input_text)
+		    .expect("failed to read from stdin");
 		let trimmed = input_text.trim();
 		if let Ok(i) = trimmed.parse::<usize>() {
 			self.place_mark(Mark::X, i)
@@ -97,28 +105,15 @@ impl Game {
 				flipped[3*i + (2-j)] = self.board[3*j+i];
 			}
 		}
-		return Game {board: flipped, winner: self.winner, turn: self.turn};
+		return TickTackToe {board: flipped, winner: self.winner, turn: self.turn};
 	}
 
 	fn is_won_horizontal(&self) -> Option<Mark> {
-		let b = &self.board;
-
-		if b[0] != Mark::E && ((b[0] == b[1] && b[1] == b[2]) || (b[0] == b[4] && b[4] == b[8])) {
-			Some(b[0])
-		} else if b[3] != Mark::E && b[3] == b[4] && b[4] == b[5] {
-			Some(b[3])
-		} else if b[6] != Mark::E && b[6] == b[7] && b[7] == b[8] {
-			Some(b[6])
-		} else {
-			None
-		}
-	}
-
-	fn flip_turn(&mut self) {
-		match self.turn {
-			Mark::X => self.turn = Mark::O,
-			_ => self.turn = Mark::X,
-		}
+    	let b = &self.board;
+    	is_won_row(&b[0..3])
+    		.or(is_won_row(&b[3..6]))
+    		.or(is_won_row(&b[6..9]))
+    		.or(is_won_row(&[b[0], b[4], b[8]]))
 	}
 
 	fn is_won(&mut self) -> bool {
@@ -143,8 +138,16 @@ impl Game {
 	//}
 }
 
-fn play_game() -> Game {
-	let mut game = Game::new();
+fn is_won_row(row: &[Mark]) -> Option<Mark> {
+	if row[0] != Mark::E && row[0] == row[1] && row[1] == row[2] {
+    	Some(row[0])
+	} else {
+    	None
+	}
+}
+
+fn play_game() -> TickTackToe {
+	let mut game = TickTackToe::new();
 	while !game.is_done() {
 		while !game.player_move() {}
 	}
@@ -164,18 +167,18 @@ enum RefList<'a, E: 'a> {
 }
 
 #[derive(Debug, Clone)]
-enum BoxList {
+enum BoxList<E> {
 	Nil,
-	Cons(String, Box<BoxList>),
+	Cons(E, Box<BoxList<E>>),
 }
 
 struct Score {
-    games: BoxList,
-    xwin: u32,
-    owin: u32,
+	games: BoxList<String>,
+	xwin: u32,
+	owin: u32,
 }
 
-impl fmt::Display for BoxList {
+impl<E: fmt::Display> fmt::Display for BoxList<E> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let printable = match *self {
 			BoxList::Cons(ref game, ref l) => String::from(format!("{}\n{}", game, l)),
@@ -187,26 +190,27 @@ impl fmt::Display for BoxList {
 
 impl fmt::Display for Score {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    	write!(f, "Games:\n{}\nX has won {} times\nO has won {} times.", self.games, self.xwin, self.owin)
+		write!(f, "TickTackToes:\n{}\nX has won {} times\nO has won {} times.",
+		       self.games, self.xwin, self.owin)
 	}
 }
 
 impl Score {
-    fn add_game(&mut self, game: Game) {
+	fn add_game(&mut self, game: TickTackToe) {
 		match game.winner {
-    		Mark::O => self.owin += 1,
-    		Mark::X => self.xwin += 1,
-    		_ => ()
+			Mark::O => self.owin += 1,
+			Mark::X => self.xwin += 1,
+			_ => ()
 		};
 		self.games = BoxList::Cons(format!("{}", game), Box::new(self.games.clone()));
-    }
+	}
 }
 
 fn main() {
 	use BoxList::*;
 	let mut score = Score { games: Nil, xwin: 0, owin: 0 };
 	for _ in 0..3 {
-    	score.add_game(play_game());
+		score.add_game(play_game());
 	}
 	println!("============\n{}", score);
 }
