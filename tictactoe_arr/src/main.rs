@@ -4,34 +4,6 @@ use std::io;
 use std::fmt;
 use std::option::*;
 
-#[allow(dead_code)]
-#[derive(Debug, Clone)]
-enum RefList<'a, E: 'a> {
-	Nil,
-	Cons(E, &'a RefList<'a, E>),
-}
-
-impl<'a> RefList<'a, String> {
-    fn len(&'a self) -> i32 {
-        match *self {
-            RefList::Cons(_, l) => 1+l.len(),
-            _ => 0,
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-enum BoxList {
-	Nil,
-	Cons(String, Box<BoxList>),
-}
-
-struct Score {
-    games: BoxList,
-    xwin: u32,
-    owin: u32,
-}
-
 #[derive(Clone, Copy, PartialEq)]
 enum Mark {
 	O,
@@ -43,34 +15,6 @@ struct Game {
 	board: [Mark; 9],
 	turn: Mark,
 	winner: Mark,
-}
-
-impl fmt::Display for Score {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    	write!(f, "Games:\n{}\nX has won {} times\n O has won {} times.", self.games, self.xwin, self.owin)
-	}
-}
-
-impl Score {
-    fn add_game(&mut self, game: Game) {
-		match game.winner {
-    		Mark::O => self.owin += 1,
-    		Mark::X => self.xwin += 1,
-    		_ => ()
-		};
-		self.games = BoxList::Cons(format!("{}", game), Box::new(self.games.clone()));
-    }
-}
-
-
-impl fmt::Display for BoxList {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		let printable = match *self {
-			BoxList::Cons(ref game, ref l) => String::from(format!("{}\n{}", game, l)),
-			_ => String::from(""),
-		};
-		write!(f, "{}", printable)
-	}
 }
 
 impl fmt::Display for Mark {
@@ -106,7 +50,47 @@ impl Game {
 		Game { board: [E; 9], turn: X, winner: E }
 	}
 
-	fn flip(&self) -> Game {
+	fn player_move(&mut self) -> bool {
+		match self.turn {
+			Mark::X => self.make_player_move(),
+			_ => self.make_ai_move(),
+		}
+	}
+
+	fn place_mark(&mut self, m: Mark, i: usize) -> bool {
+		if self.board[i] == Mark::E {
+			self.board[i] = m;
+			self.flip_turn();
+			true
+		} else {
+			false
+		}
+	}
+
+	fn make_player_move(&mut self) -> bool {
+		println!("{}", &self);
+		println!("Make a move:");
+		let mut input_text = String::new();
+		io::stdin()
+			.read_line(&mut input_text)
+			.expect("failed to read from stdin");
+		let trimmed = input_text.trim();
+		if let Ok(i) = trimmed.parse::<usize>() {
+			self.place_mark(Mark::X, i)
+		} else {
+			false
+		}
+	}
+
+	fn make_ai_move(&mut self) -> bool {
+		use rand::distributions::{IndependentSample, Range};
+
+		let mut rng = rand::thread_rng();
+		let between = Range::new(0, 9);
+		self.place_mark(Mark::O, between.ind_sample(&mut rng))
+	}
+
+	fn flip(&self) -> Self {
 		let mut flipped = [Mark::E; 9];
 		for i in 0..3 {
 			for j in 0..3 {
@@ -154,69 +138,75 @@ impl Game {
 		self.is_won() || self.is_tie()
 	}
 
-	fn make_move(&mut self, m: Mark, i: usize) -> bool {
-		if self.board[i] == Mark::E {
-			self.board[i] = m;
-			self.flip_turn();
-			true
-		} else {
-			false
-		}
-	}
-
-	fn player_move(&mut self) -> bool {
-		match self.turn {
-			Mark::X => self.make_player_move(),
-			_ => self.make_ai_move(),
-		}
-	}
-
-	fn make_player_move(&mut self) -> bool {
-		println!("{}", &self);
-		println!("Make a move:");
-		let mut input_text = String::new();
-		io::stdin()
-			.read_line(&mut input_text)
-			.expect("failed to read from stdin");
-		let trimmed = input_text.trim();
-		if let Ok(i) = trimmed.parse::<usize>() {
-			self.make_move(Mark::X, i)
-		} else {
-			false
-		}
-	}
-
-	fn make_ai_move(&mut self) -> bool {
-		use rand::distributions::{IndependentSample, Range};
-
-		let mut rng = rand::thread_rng();
-		let between = Range::new(0, 9);
-		self.make_move(Mark::O, between.ind_sample(&mut rng))
-	}
-
-	//fn store_win(self) -> String {
+	//fn consume(self) -> String {
 	//	format!("{}", self)
 	//}
 }
 
+fn play_game() -> Game {
+	let mut game = Game::new();
+	while !game.is_done() {
+		while !game.player_move() {}
+	}
+	println!("============\n{}", &game);
+	match game.winner {
+		Mark::E => println!("Tie!"),
+		_ => println!("Player {} won!", game.winner),
+	}
+	return game;
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone)]
+enum RefList<'a, E: 'a> {
+	Nil,
+	Cons(E, &'a RefList<'a, E>),
+}
+
+#[derive(Debug, Clone)]
+enum BoxList {
+	Nil,
+	Cons(String, Box<BoxList>),
+}
+
+struct Score {
+    games: BoxList,
+    xwin: u32,
+    owin: u32,
+}
+
+impl fmt::Display for BoxList {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		let printable = match *self {
+			BoxList::Cons(ref game, ref l) => String::from(format!("{}\n{}", game, l)),
+			_ => String::from(""),
+		};
+		write!(f, "{}", printable)
+	}
+}
+
+impl fmt::Display for Score {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    	write!(f, "Games:\n{}\nX has won {} times\nO has won {} times.", self.games, self.xwin, self.owin)
+	}
+}
+
+impl Score {
+    fn add_game(&mut self, game: Game) {
+		match game.winner {
+    		Mark::O => self.owin += 1,
+    		Mark::X => self.xwin += 1,
+    		_ => ()
+		};
+		self.games = BoxList::Cons(format!("{}", game), Box::new(self.games.clone()));
+    }
+}
+
 fn main() {
-	//use RefList::*;
-	//let mut refLst = Nil;
 	use BoxList::*;
 	let mut score = Score { games: Nil, xwin: 0, owin: 0 };
 	for _ in 0..3 {
-    	let mut game = Game::new();
-    	while !game.is_done() {
-			while !game.player_move() {}
-		}
-		println!("============\n{}", &game);
-		match game.winner {
-			Mark::E => println!("Tie!"),
-    		_ => println!("Player {} won!", game.winner),
-    	}
-    	//refLst = Cons(game.store_win(), &lst.clone()); // Results in err as lst.clone() does not live long enough
-    	score.add_game(game);
+    	score.add_game(play_game());
 	}
 	println!("============\n{}", score);
-	println!("len: {}", (RefList::Cons(String::from("Hello"), &RefList::Cons(String::from("World"), &RefList::Nil))).len());
 }
