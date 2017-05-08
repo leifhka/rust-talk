@@ -2,6 +2,22 @@
 %author: Leif Harald Karlsen
 %date: 2016-05-09
 
+
+
+
+
+->  \_\_\_\_            \_     \_\_\_\_\_      \_             \_       \_  <-
+-> |  \_ \\ \_   \_ \_\_\_| |\_  |\_   \_|   \_| |\_ \_\_\_  \_ \_\_(\_) \_\_ \_| | <-
+-> | |\_) | | | / \_\_| \_\_|   | || | | | \_\_/ \_ \\| '\_\_| |/ \_\\ | | <-
+-> |  \_ <| |\_| \\\_\_ \\ |\_    | || |\_| | || (\_) | |  | | (\_| | | <-
+-> |\_| \\\_\\\\\_\_,\_|\_\_\_/\\\_\_|   |\_| \\\_\_,\_|\\\_\_\\\_\_\_/|\_|  |\_|\\\_\_,\_|\_| <-
+
+
+-> by Leif Harald Karlsen <-
+ 
+---
+
+
 -> # Content <-
 
 * Placing Rust among other languages
@@ -68,33 +84,23 @@ Rust:
 
 ---
 
--> # Data races <-
+-> #Rules <-
 
-> A data race is a condition defined by
-> having at least one entity writing to
-> a location which others are reading.
+_Borrowing:_
 
----
-
--> # Borrowing <-
-
-_At any point in time we can have:_
-
+At any point in time we can have:
 ^
 * Any number of immutable borrows ( *\&x* )
 ^
 * but no mutable borrows ( *\&mut x* )
 ^
-
 or
-
 * Exactly one mutable borrow ( *\&mut x* )
 ^
 * but no immutable borrows ( *\&x* )
+^ 
 
----
-
--> # Lifetimes <-
+_Lifetimes:_
 
 * No reference can outlive what it refers to.
 ^

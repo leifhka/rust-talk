@@ -51,15 +51,15 @@ impl TickTackToe {
 		TickTackToe { board: [E; 9], turn: X, winner: E }
 	}
 
-	fn player_move(&mut self) -> bool {
+	fn make_player_move(&mut self) -> bool {
 		match self.turn {
-			Mark::X => self.make_player_move(),
+			Mark::X => self.make_human_move(),
 			_ => self.make_ai_move(),
 		}
 	}
 
 	fn place_mark(&mut self, m: Mark, i: usize) -> bool {
-		if self.board[i] == Mark::E {
+		if self.board[i] == Mark::E && i < 9 {
 			self.board[i] = m;
 			self.flip_turn();
 			true
@@ -75,7 +75,7 @@ impl TickTackToe {
 		}
 	}
 
-	fn make_player_move(&mut self) -> bool {
+	fn make_human_move(&mut self) -> bool {
 		println!("{}", &self);
 		println!("Make a move:");
 		let mut input_text = String::new();
@@ -149,7 +149,7 @@ fn is_won_row(row: &[Mark]) -> Option<Mark> {
 fn play_game() -> TickTackToe {
 	let mut game = TickTackToe::new();
 	while !game.is_done() {
-		while !game.player_move() {}
+		while !game.make_player_move() {}
 	}
 	println!("============\n{}", &game);
 	match game.winner {
@@ -158,6 +158,11 @@ fn play_game() -> TickTackToe {
 	}
 	return game;
 }
+
+//enum ErrList<E> {
+//	Nil,
+//	Cons(E, ErrList),
+//}
 
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
