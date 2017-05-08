@@ -1,6 +1,6 @@
 %title: Rust Tutorial
 %author: Leif Harald Karlsen
-%date: 2016-05-09
+%date: 2017-05-09
 
 
 
@@ -17,33 +17,28 @@
  
 ---
 
-
 -> # Content <-
-
 * Placing Rust among other languages
   * Why does Rust exist?
   * Language overview
 ^
 * Simple features
   * Declarations
-  * Structs and types
   * Functions and methods
-  * Traits
-  * Borrowing
+  * Structs, types and traits
+  * High-level functionality
 ^
 * Advanced features
-  * More on ownership and borrowing
+  * Ownership and borrowing
   * Lifetimes
-  * Box
+  * Box and Rc
   * Unsafe
 
 ---
 
 -> # Why does Rust exist? <-
 
-
 _One normally has to pick one of:_
-
 * No Runtime: (C/C++)
 ^
   * Low resource consumption, 
@@ -81,13 +76,44 @@ Rust:
 * is memory safe,
 ^
 * heavily influenced by C and Haskell
+^
+* introudces alot of zero-cost abstractions
+
+---
+
+-> # Basic Rust <-
+
+* *let x = val* - introduces a new variable *x* with value *val*
+^
+* *x: t* - states that *x* has type *t*
+^
+* *mut x* - denotes a mutable variable *x*
+^
+* *\&x* - denotes a reference to *x*
+^
+* *&mut x* - denotes a mutable reference to *x*
+^
+* *fn f(x: t) -> r { body }* - defines a function *f* from *t* to *r*
+^
+* *struct Pair { x: t1, y: t2 }* - defines a C-like struct
+^
+* *struct Pair(t1, t2)* - defines a tuple struct
+^
+* *enum E { X, Y, Z }* - defines an enum/union type
+^
+* *impl S { fs }* - defines methods *fs* for type *Pair*
+^
+* *s.f(x)* - calls a method *f* with argument *x* on *s*
+^
+* *impl T for S { fs }* - implements trait *T* for type *S*
+^
+* *|x| (x+1)* - defines a lambda function with argument *x*
 
 ---
 
 -> #Rules <-
 
 _Borrowing:_
-
 At any point in time we can have:
 ^
 * Any number of immutable borrows ( *\&x* )
@@ -101,7 +127,6 @@ or
 ^ 
 
 _Lifetimes:_
-
 * No reference can outlive what it refers to.
 ^
 * The compiler ensures this, so there are no dangling pointers at runtime.

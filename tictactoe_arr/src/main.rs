@@ -30,6 +30,7 @@ impl fmt::Display for Mark {
 	}
 }
 
+// Copy in
 impl fmt::Display for TickTackToe {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let mut s = String::from("");
@@ -37,7 +38,10 @@ impl fmt::Display for TickTackToe {
 
 		for i in 0..3 {
 			let ind = i*3;
-			s = s + format!("{}\n│{}│{}│{}│\n", b, self.board[ind], self.board[ind+1], self.board[ind+2]).as_str();
+			s = s + format!("{}\n│{}│{}│{}│\n", b,
+			                self.board[ind],
+			                self.board[ind+1],
+			                self.board[ind+2]).as_str();
 			b = String::from("├─┼─┼─┤");
 		}
 
@@ -90,6 +94,7 @@ impl TickTackToe {
 		}
 	}
 
+	// Copy in
 	fn make_ai_move(&mut self) -> bool {
 		use rand::distributions::{IndependentSample, Range};
 
@@ -98,6 +103,7 @@ impl TickTackToe {
 		self.place_mark(Mark::O, between.ind_sample(&mut rng))
 	}
 
+	// Copy in
 	fn flip(&self) -> Self {
 		let mut flipped = [Mark::E; 9];
 		for i in 0..3 {
@@ -109,15 +115,16 @@ impl TickTackToe {
 	}
 
 	fn is_won_horizontal(&self) -> Option<Mark> {
-    	let b = &self.board;
-    	is_won_row(&b[0..3])
-    		.or(is_won_row(&b[3..6]))
-    		.or(is_won_row(&b[6..9]))
-    		.or(is_won_row(&[b[0], b[4], b[8]]))
+		let b = &self.board;
+		is_won_row(&b[0..3])
+    	.or(is_won_row(&b[3..6]))
+    	.or(is_won_row(&b[6..9]))
+    	.or(is_won_row(&[b[0], b[4], b[8]]))
 	}
 
 	fn is_won(&mut self) -> bool {
-		if let Some(winner) = self.is_won_horizontal().or(self.flip().is_won_horizontal()) {
+		if let Some(winner) = self.is_won_horizontal()
+		                      .or(self.flip().is_won_horizontal()) {
 			self.winner = winner;
 			true
 		} else {
@@ -139,10 +146,12 @@ impl TickTackToe {
 }
 
 fn is_won_row(row: &[Mark]) -> Option<Mark> {
-	if row[0] != Mark::E && row[0] == row[1] && row[1] == row[2] {
-    	Some(row[0])
+	if row[0] != Mark::E &&
+	   row[0] == row[1] &&
+	   row[1] == row[2] {
+		Some(row[0])
 	} else {
-    	None
+		None
 	}
 }
 
@@ -183,23 +192,6 @@ struct Score {
 	owin: u32,
 }
 
-impl<E: fmt::Display> fmt::Display for BoxList<E> {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		let printable = match *self {
-			BoxList::Cons(ref game, ref l) => String::from(format!("{}\n{}", game, l)),
-			_ => String::from(""),
-		};
-		write!(f, "{}", printable)
-	}
-}
-
-impl fmt::Display for Score {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "TickTackToes:\n{}\nX has won {} times\nO has won {} times.",
-		       self.games, self.xwin, self.owin)
-	}
-}
-
 impl Score {
 	fn add_game(&mut self, game: TickTackToe) {
 		match game.winner {
@@ -207,7 +199,8 @@ impl Score {
 			Mark::X => self.xwin += 1,
 			_ => ()
 		};
-		self.games = BoxList::Cons(format!("{}", game), Box::new(self.games.clone()));
+		let s = format!("{}", game);
+		self.games = BoxList::Cons(s, Box::new(self.games.clone()));
 	}
 }
 
