@@ -3,6 +3,7 @@ extern crate rand;
 use std::io;
 use std::fmt;
 use std::option::*;
+use std::rc::*;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 enum Mark {
@@ -12,7 +13,7 @@ enum Mark {
 }
 
 #[derive(Debug)]
-struct TickTackToe {
+struct TicTacToe {
 	board: [Mark; 9],
 	turn: Mark,
 	winner: Mark,
@@ -30,8 +31,7 @@ impl fmt::Display for Mark {
 	}
 }
 
-// Copy in
-impl fmt::Display for TickTackToe {
+impl fmt::Display for TicTacToe {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let mut s = String::from("");
 		let mut b = String::from("");
@@ -49,10 +49,10 @@ impl fmt::Display for TickTackToe {
 	}
 }
 
-impl TickTackToe {
+impl TicTacToe {
 	fn new() -> Self {
 		use Mark::*;
-		TickTackToe { board: [E; 9], turn: X, winner: E }
+		TicTacToe { board: [E; 9], turn: X, winner: E }
 	}
 
 	fn make_player_move(&mut self) -> bool {
@@ -94,7 +94,6 @@ impl TickTackToe {
 		}
 	}
 
-	// Copy in
 	fn make_ai_move(&mut self) -> bool {
 		use rand::distributions::{IndependentSample, Range};
 
@@ -103,7 +102,6 @@ impl TickTackToe {
 		self.place_mark(Mark::O, between.ind_sample(&mut rng))
 	}
 
-	// Copy in
 	fn flip(&self) -> Self {
 		let mut flipped = [Mark::E; 9];
 		for i in 0..3 {
@@ -111,7 +109,7 @@ impl TickTackToe {
 				flipped[3*i + (2-j)] = self.board[3*j+i];
 			}
 		}
-		return TickTackToe {board: flipped, winner: self.winner, turn: self.turn};
+		return TicTacToe {board: flipped, winner: self.winner, turn: self.turn};
 	}
 
 	fn is_won_horizontal(&self) -> Option<Mark> {
@@ -140,9 +138,9 @@ impl TickTackToe {
 		self.is_won() || self.is_tie()
 	}
 
-	//fn consume(self) -> String {
-	//	format!("{}", self)
-	//}
+	fn consume(self) -> String {
+		format!("{}", self)
+	}
 }
 
 fn is_won_row(row: &[Mark]) -> Option<Mark> {
@@ -155,8 +153,8 @@ fn is_won_row(row: &[Mark]) -> Option<Mark> {
 	}
 }
 
-fn play_game() -> TickTackToe {
-	let mut game = TickTackToe::new();
+fn play_game() -> TicTacToe {
+	let mut game = TicTacToe::new();
 	while !game.is_done() {
 		while !game.make_player_move() {}
 	}
@@ -165,9 +163,28 @@ fn play_game() -> TickTackToe {
 		Mark::E => println!("Tie!"),
 		_ => println!("Player {} won!", game.winner),
 	}
+	//let g = game; // Leads to move error
+	//game.consume(); // Leads to move error
 	return game;
 }
 
+#[derive(Debug)]
+struct Score {
+	xwin: u32,
+	owin: u32,
+}
+
+impl Score {
+	fn add_game(&mut self, game: TicTacToe) {
+		match game.winner {
+			Mark::O => self.owin += 1,
+			Mark::X => self.xwin += 1,
+			_ => ()
+		};
+	}
+}
+
+// Infinite size, does not compile
 //enum ErrList<E> {
 //	Nil,
 //	Cons(E, ErrList),
@@ -175,9 +192,15 @@ fn play_game() -> TickTackToe {
 
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
-enum RefList<'a, E: 'a> {
+enum RefList<'a, E: 'a + fmt::Display + Clone> {
 	Nil,
 	Cons(E, &'a RefList<'a, E>),
+}
+
+impl<'a, E: fmt::Display + Clone> RefList<'a, E> {
+	fn add(&'a self, e: E) -> RefList<'a, E> {
+		RefList::Cons(e, &self)
+	}
 }
 
 #[derive(Debug, Clone)]
@@ -186,29 +209,38 @@ enum BoxList<E> {
 	Cons(E, Box<BoxList<E>>),
 }
 
-struct Score {
-	games: BoxList<String>,
-	xwin: u32,
-	owin: u32,
+struct Node<E> {
+	e: E,
+	nodes: Vec<Rc<Node<E>>>,
 }
 
-impl Score {
-	fn add_game(&mut self, game: TickTackToe) {
-		match game.winner {
-			Mark::O => self.owin += 1,
-			Mark::X => self.xwin += 1,
-			_ => ()
-		};
-		let s = format!("{}", game);
-		self.games = BoxList::Cons(s, Box::new(self.games.clone()));
-	}
-}
 
 fn main() {
 	use BoxList::*;
-	let mut score = Score { games: Nil, xwin: 0, owin: 0 };
+	let mut score = Score { xwin: 0, owin: 0 };
 	for _ in 0..3 {
 		score.add_game(play_game());
 	}
-	println!("============\n{}", score);
+	println!("============\n{:?}", score);
+
+	// let mut n1 = Node { e: 1, nodes: Vec::new() };
+	// let mut n2 = Node { e: 2, nodes: Vec::new() };
+	// let n1r = Rc::new(n1);
+	// n2.nodes.push(n1r.clone());
+	// let mut n3 = Node { e: 3, nodes: Vec::new() };
+	// n3.nodes.push(n1r.clone());
+	// Rc::get_mut(&mut n2.nodes[0]).unwrap().e = 5;
+	// println!("{}, {}", n2.nodes[0].e, n1r.e);
+
+	//let mut x = 5;
+	//let raw = &mut x as *mut i32;
+	// println!("{}", *raw); // Unsafe, wont work
+	//unsafe {
+	//	println!("{}", *raw); // Unsafe, works in unsafe
+	//	let raw2 = raw;
+	//	*raw2 = 2;
+	//	*raw = 1;
+	//	println!("{},{}", *raw2, *raw); // Unsafe, works in unsafe
+	//}
 }
+

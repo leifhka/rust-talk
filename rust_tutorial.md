@@ -63,21 +63,30 @@ _One normally has to pick one of:_
 ---
 
 -> # Language overview <-
+ 
+Rust is developed by Mozilla Research and is heavily influenced
+by C, C++ and Haskell.
+^
 
-Rust:
-* is compiled systems programming language,
+Features (from rust-lang.org):
+* zero-cost abstractions
 ^
-* is strictly and statically typed,
+* move semantics
 ^
-* has a struct and trait based type system,
+* guaranteed memory safety
 ^
-* is comparable to C/C++ in speed,
+* threads without data races
 ^
-* is memory safe,
+* trait-based generics
 ^
-* heavily influenced by C and Haskell
+* pattern matching
 ^
-* introudces alot of zero-cost abstractions
+* type inference
+^
+* minimal runtime
+^
+* efficient C bindings
+
 
 ---
 
@@ -113,22 +122,72 @@ Rust:
 
 -> #Rules <-
 
+_Ownership:_
+
+*let x = val* - *x* now owns *val*
+^
+*let y = x* - then does a bit-wise move of *val* to *y* making *x* unusable
+^
+
 _Borrowing:_
+
+*let y = \&x* - *y* now borrows *x*
+^
+*let y =\&mut x* - *y* now borrows *x* and can mutate it
+^
+
 At any point in time we can have:
 ^
 * Any number of immutable borrows ( *\&x* )
 ^
-* but no mutable borrows ( *\&mut x* )
-^
 or
 * Exactly one mutable borrow ( *\&mut x* )
-^
-* but no immutable borrows ( *\&x* )
 ^ 
+but never both.
 
+^
 _Lifetimes:_
+
 * No reference can outlive what it refers to.
 ^
 * The compiler ensures this, so there are no dangling pointers at runtime.
 ^
 * Sometimes, we have to help the compiler by explicitly stating relative lifetimes.
+
+---
+
+-> # Pointer types <-
+
+* *&x* - borrowed immutable reference, data on stack
+^
+* *&mut x* - (unique) borrowed mutable reference, data on stack
+^
+* *Box::new(x)* - (unique) owned reference, data on heap
+^
+* *Rc::new(x)* - shared owned reference, data on heap, reference counting GC
+^
+* *Weak::new()* - same as Rc, but is not reference counted (allows cycles)
+^
+* *Arc::new(x)* - thread safe version of Rc
+
+---
+
+-> # Quirks <-
+
+* One cannot implement other people's traits for other people's types.
+^
+* There are no higher kinded polymorphism (so no Foldable, Functor, Monad traits).
+^
+* Functions on arrays needs to be implemented for each size.
+
+---
+
+-> # More info <-
+ 
+* Main page: [https://www.rust-lang.org/]
+* The Rust Book: [https://doc.rust-lang.org/book/]
+* Rust By Example: [http://rustbyexample.com/]
+
+ 
+
+-> *Thank you!* <-
