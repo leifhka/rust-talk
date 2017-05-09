@@ -13,8 +13,13 @@
 -> |\_| \\\_\\\\\_\_,\_|\_\_\_/\\\_\_|   |\_| \\\_\_,\_|\\\_\_\\\_\_\_/|\_|  |\_|\\\_\_,\_|\_| <-
 
 
+
 -> by Leif Harald Karlsen <-
  
+
+
+-> Code available at *https://github.com/leifhka/rust-talk*
+
 ---
 
 -> # Content <-
